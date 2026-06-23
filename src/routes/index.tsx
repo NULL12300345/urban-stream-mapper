@@ -21,6 +21,14 @@ export const Route = createFileRoute("/")({
 
 function LivePage() {
   const snap = useSimulator();
+  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(CachedMap);
+  useEffect(() => {
+    if (CachedMap) return;
+    import("@/components/TrafficMap").then((m) => {
+      CachedMap = m.TrafficMap;
+      setMapComp(() => m.TrafficMap);
+    });
+  }, []);
   const { stats } = snap;
   const travelStatus =
     stats.congestionScore < 0.3 ? { label: "CLEAR", tone: "good" as const }
@@ -45,9 +53,11 @@ function LivePage() {
       </header>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px]">
-        <Suspense fallback={<div className="grid place-items-center text-muted-foreground">Loading map…</div>}>
-          <TrafficMap snapshot={snap} className="w-full h-full" />
-        </Suspense>
+        {MapComp ? (
+          <MapComp snapshot={snap} className="w-full h-full" />
+        ) : (
+          <div className="grid place-items-center text-muted-foreground">Loading map…</div>
+        )}
 
         <aside className="border-l border-border bg-surface-1/40 backdrop-blur p-4 overflow-y-auto space-y-3">
           <h2 className="text-xs uppercase tracking-widest font-mono text-muted-foreground">Intersections</h2>
