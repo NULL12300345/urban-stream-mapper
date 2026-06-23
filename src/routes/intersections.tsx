@@ -1,7 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { useSimulator } from "@/hooks/use-simulator";
 import { simulator } from "@/lib/sim/simulator";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ export const Route = createFileRoute("/intersections")({
 });
 
 function IntersectionsPage() {
-  const { user, isAdmin, loading } = useAuth();
+  const isAdmin = true;
   const qc = useQueryClient();
   const snap = useSimulator();
 
@@ -32,8 +31,6 @@ function IntersectionsPage() {
     },
   });
 
-  if (loading) return <Center>Loading…</Center>;
-  if (!user) return <Center><p className="text-muted-foreground mb-3">Sign in required.</p><Link to="/auth" className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm">Sign in</Link></Center>;
 
   async function setAlgo(id: string, algo: "fixed" | "greedy") {
     const { error } = await supabase.from("intersections").update({ algorithm: algo }).eq("id", id);
@@ -148,6 +145,3 @@ function NewIntersectionForm({ onCreated }: { onCreated: () => void }) {
   );
 }
 
-function Center({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen grid place-items-center text-center p-6">{children}</div>;
-}
