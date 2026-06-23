@@ -23,8 +23,15 @@ const items = [
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAdmin } = useAuth();
+
+  if (!mounted) {
+    // Server-render a minimal shell so hydration matches the first client render.
+    return <div className="flex min-h-screen w-full" />;
+  }
 
   return (
     <div className="flex min-h-screen w-full">
