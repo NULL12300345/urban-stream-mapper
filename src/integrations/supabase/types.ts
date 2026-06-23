@@ -14,16 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      algorithm_runs: {
+        Row: {
+          algorithm: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds: number | null
+          congestion_score: number | null
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          vehicles_passed: number | null
+        }
+        Insert: {
+          algorithm: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds?: number | null
+          congestion_score?: number | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          vehicles_passed?: number | null
+        }
+        Update: {
+          algorithm?: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds?: number | null
+          congestion_score?: number | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          vehicles_passed?: number | null
+        }
+        Relationships: []
+      }
+      emergency_events: {
+        Row: {
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          route: Json
+          started_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          route: Json
+          started_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          route?: Json
+          started_at?: string
+        }
+        Relationships: []
+      }
+      intersections: {
+        Row: {
+          active: boolean
+          algorithm: Database["public"]["Enums"]["algorithm_type"]
+          approaches: Json
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          algorithm?: Database["public"]["Enums"]["algorithm_type"]
+          approaches?: Json
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          algorithm?: Database["public"]["Enums"]["algorithm_type"]
+          approaches?: Json
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      simulation_logs: {
+        Row: {
+          id: string
+          level: string
+          message: string
+          meta: Json | null
+          ts: string
+        }
+        Insert: {
+          id?: string
+          level: string
+          message: string
+          meta?: Json | null
+          ts?: string
+        }
+        Update: {
+          id?: string
+          level?: string
+          message?: string
+          meta?: Json | null
+          ts?: string
+        }
+        Relationships: []
+      }
+      stat_snapshots: {
+        Row: {
+          algorithm: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds: number
+          congestion_score: number
+          emergency_active: boolean
+          id: string
+          taken_at: string
+          total_vehicles: number
+          vehicles_passed: number
+        }
+        Insert: {
+          algorithm: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds: number
+          congestion_score: number
+          emergency_active?: boolean
+          id?: string
+          taken_at?: string
+          total_vehicles: number
+          vehicles_passed: number
+        }
+        Update: {
+          algorithm?: Database["public"]["Enums"]["algorithm_type"]
+          avg_wait_seconds?: number
+          congestion_score?: number
+          emergency_active?: boolean
+          id?: string
+          taken_at?: string
+          total_vehicles?: number
+          vehicles_passed?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      algorithm_type: "fixed" | "greedy"
+      app_role: "admin" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +342,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      algorithm_type: ["fixed", "greedy"],
+      app_role: ["admin", "viewer"],
+    },
   },
 } as const
