@@ -23,10 +23,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { user, isAdmin } = useAuth();
 
   if (!mounted) {
-    // Server-render a minimal shell so hydration matches the first client render.
     return <div className="flex min-h-screen w-full" />;
   }
 
@@ -68,33 +66,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="border-t border-border p-3">
-          {user ? (
-            <div className="space-y-2">
-              <div className="text-xs">
-                <div className="font-medium truncate">{user.email}</div>
-                <div className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
-                  {isAdmin ? "ADMIN" : "VIEWER"}
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  window.location.href = "/";
-                }}
-                className="w-full flex items-center justify-center gap-1.5 text-xs py-1.5 rounded border border-border hover:bg-surface-2"
-              >
-                <LogOut className="size-3" /> Sign out
-              </button>
-            </div>
-          ) : (
-            <Link
-              to="/auth"
-              className="block text-center text-xs py-2 rounded bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25"
-            >
-              Admin sign in
-            </Link>
-          )}
+        <div className="border-t border-border p-3 text-[10px] uppercase tracking-widest font-mono text-muted-foreground text-center">
+          Open Access Mode
         </div>
       </aside>
 
@@ -102,3 +75,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
