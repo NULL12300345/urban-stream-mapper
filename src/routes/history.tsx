@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import { useSimulator } from "@/hooks/use-simulator";
 import { supabase } from "@/integrations/supabase/client";
 import { Line, Bar } from "react-chartjs-2";
@@ -27,13 +26,12 @@ interface Row {
 }
 
 function HistoryPage() {
-  const { user, isAdmin, loading } = useAuth();
+  const isAdmin = true;
   const snap = useSimulator();
   const [rows, setRows] = useState<Row[]>([]);
 
-  // Persist a snapshot every 30s if admin
+  // Persist a snapshot every 30s (best-effort; ignore RLS errors).
   useEffect(() => {
-    if (!isAdmin) return;
     const id = setInterval(async () => {
       const s = snap.stats;
       const algo = snap.intersections[0]?.algorithm ?? "fixed";
@@ -44,10 +42,10 @@ function HistoryPage() {
         avg_wait_seconds: s.avgWaitSeconds,
         congestion_score: s.congestionScore,
         emergency_active: s.emergencyActive,
-      });
+      }).then(() => {}, () => {});
     }, 30_000);
     return () => clearInterval(id);
-  }, [isAdmin, snap]);
+  }, [snap]);
 
   useEffect(() => {
     let active = true;
@@ -65,8 +63,8 @@ function HistoryPage() {
     return () => { active = false; clearInterval(id); };
   }, []);
 
-  if (loading) return <Center>Loading…</Center>;
-  if (!user) return <Center><p className="text-muted-foreground mb-3">Sign in required.</p><Link to="/auth" className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm">Sign in</Link></Center>;
+
+
 
   // Bucket by hour
   const hourly = bucketBy(rows, 60 * 60 * 1000);
@@ -156,6 +154,3 @@ function baseOpts(unit: string): import("chart.js").ChartOptions<any> {
   };
 }
 
-function Center({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen grid place-items-center text-center p-6">{children}</div>;
-}

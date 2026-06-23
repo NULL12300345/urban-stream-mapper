@@ -2,9 +2,8 @@
 // parallel by setting all intersections to the chosen algorithm, then
 // recording stats over time. The chart shows live avg wait + congestion.
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import { useSimulator } from "@/hooks/use-simulator";
 import { simulator } from "@/lib/sim/simulator";
 import { Line } from "react-chartjs-2";
@@ -31,7 +30,7 @@ export const Route = createFileRoute("/algorithms")({
 interface Sample { t: number; wait: number; cong: number; passed: number; }
 
 function AlgorithmsPage() {
-  const { user, isAdmin, loading } = useAuth();
+  const isAdmin = true;
   const snap = useSimulator();
   const [current, setCurrent] = useState<"fixed" | "greedy">("fixed");
   const [samples, setSamples] = useState<{ fixed: Sample[]; greedy: Sample[] }>({ fixed: [], greedy: [] });
@@ -54,8 +53,8 @@ function AlgorithmsPage() {
     return () => clearInterval(id);
   }, [current, snap]);
 
-  if (loading) return <Center>Loading…</Center>;
-  if (!user) return <Center><p className="text-muted-foreground mb-3">Sign in required.</p><Link to="/auth" className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm">Sign in</Link></Center>;
+
+
 
   function switchAlgo(algo: "fixed" | "greedy") {
     simulator.setGlobalAlgorithm(algo);

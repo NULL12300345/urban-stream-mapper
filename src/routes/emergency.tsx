@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import { useSimulator } from "@/hooks/use-simulator";
 import { simulator } from "@/lib/sim/simulator";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,15 +18,10 @@ export const Route = createFileRoute("/emergency")({
 });
 
 function EmergencyPage() {
-  const { user, isAdmin, loading } = useAuth();
   const snap = useSimulator();
   const [axis, setAxis] = useState<"NS" | "EW">("NS");
   const [picked, setPicked] = useState<string[]>([]);
   const [dispatching, setDispatching] = useState(false);
-
-  if (loading) return <Center>Loading…</Center>;
-  if (!user) return <Center><p className="text-muted-foreground mb-3">Sign in required.</p><Link to="/auth" className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm">Sign in</Link></Center>;
-  if (!isAdmin) return <Center><p className="text-muted-foreground">Admin role required to dispatch emergencies.</p></Center>;
 
   function toggle(id: string) {
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -38,10 +32,10 @@ function EmergencyPage() {
     setDispatching(true);
     try {
       simulator.triggerEmergency(picked, axis);
+      // Best-effort persistence; ignore RLS errors in open-access mode.
       await supabase.from("emergency_events").insert({
-        created_by: user!.id,
         route: { intersection_ids: picked, axis },
-      });
+      } as never).then(() => {}, () => {});
       toast.success("🚑 Ambulance dispatched. Corridor active.");
       setPicked([]);
     } catch (e) {
@@ -50,6 +44,7 @@ function EmergencyPage() {
       setDispatching(false);
     }
   }
+
 
   function clearAll() {
     simulator.clearEmergency();
@@ -123,6 +118,3 @@ function EmergencyPage() {
   );
 }
 
-function Center({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen grid place-items-center text-center p-6">{children}</div>;
-}

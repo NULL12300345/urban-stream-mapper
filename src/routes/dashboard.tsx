@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useSimulator } from "@/hooks/use-simulator";
-import { useAuth } from "@/hooks/use-auth";
 import { StatCard } from "@/components/StatCard";
 import { TrafficLightIcon } from "@/components/TrafficLightIcon";
 import { simulator } from "@/lib/sim/simulator";
@@ -19,15 +18,7 @@ export const Route = createFileRoute("/dashboard")({
 
 function DashboardPage() {
   const snap = useSimulator();
-  const { user, isAdmin, loading } = useAuth();
-
-  if (loading) return <Center>Loading session…</Center>;
-  if (!user) return (
-    <Center>
-      <p className="text-muted-foreground">Sign in required for the ops dashboard.</p>
-      <Link to="/auth" className="mt-3 inline-block px-4 py-2 rounded bg-primary text-primary-foreground text-sm">Sign in</Link>
-    </Center>
-  );
+  const isAdmin = true;
 
   const { stats } = snap;
 
@@ -36,9 +27,10 @@ function DashboardPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Operations Dashboard</h1>
         <p className="text-xs text-muted-foreground font-mono mt-1">
-          tick {snap.tick} · {isAdmin ? "ADMIN" : "VIEWER"} mode
+          tick {snap.tick} · open access
         </p>
       </header>
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total vehicles" value={stats.totalVehicles} hint="queued + in transit" />
@@ -107,6 +99,3 @@ function DashboardPage() {
   );
 }
 
-function Center({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen grid place-items-center text-center p-6">{children}</div>;
-}
