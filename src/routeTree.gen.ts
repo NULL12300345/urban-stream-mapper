@@ -9,8 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IntersectionsRouteImport } from './routes/intersections'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as EmergencyRouteImport } from './routes/emergency'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AlgorithmsRouteImport } from './routes/algorithms'
 import { Route as IndexRouteImport } from './routes/index'
 
+const IntersectionsRoute = IntersectionsRouteImport.update({
+  id: '/intersections',
+  path: '/intersections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmergencyRoute = EmergencyRouteImport.update({
+  id: '/emergency',
+  path: '/emergency',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlgorithmsRoute = AlgorithmsRouteImport.update({
+  id: '/algorithms',
+  path: '/algorithms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +55,116 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/algorithms': typeof AlgorithmsRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/emergency': typeof EmergencyRoute
+  '/history': typeof HistoryRoute
+  '/intersections': typeof IntersectionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/algorithms': typeof AlgorithmsRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/emergency': typeof EmergencyRoute
+  '/history': typeof HistoryRoute
+  '/intersections': typeof IntersectionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/algorithms': typeof AlgorithmsRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/emergency': typeof EmergencyRoute
+  '/history': typeof HistoryRoute
+  '/intersections': typeof IntersectionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/algorithms'
+    | '/auth'
+    | '/dashboard'
+    | '/emergency'
+    | '/history'
+    | '/intersections'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/algorithms'
+    | '/auth'
+    | '/dashboard'
+    | '/emergency'
+    | '/history'
+    | '/intersections'
+  id:
+    | '__root__'
+    | '/'
+    | '/algorithms'
+    | '/auth'
+    | '/dashboard'
+    | '/emergency'
+    | '/history'
+    | '/intersections'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlgorithmsRoute: typeof AlgorithmsRoute
+  AuthRoute: typeof AuthRoute
+  DashboardRoute: typeof DashboardRoute
+  EmergencyRoute: typeof EmergencyRoute
+  HistoryRoute: typeof HistoryRoute
+  IntersectionsRoute: typeof IntersectionsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/intersections': {
+      id: '/intersections'
+      path: '/intersections'
+      fullPath: '/intersections'
+      preLoaderRoute: typeof IntersectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/emergency': {
+      id: '/emergency'
+      path: '/emergency'
+      fullPath: '/emergency'
+      preLoaderRoute: typeof EmergencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/algorithms': {
+      id: '/algorithms'
+      path: '/algorithms'
+      fullPath: '/algorithms'
+      preLoaderRoute: typeof AlgorithmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +177,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlgorithmsRoute: AlgorithmsRoute,
+  AuthRoute: AuthRoute,
+  DashboardRoute: DashboardRoute,
+  EmergencyRoute: EmergencyRoute,
+  HistoryRoute: HistoryRoute,
+  IntersectionsRoute: IntersectionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -150,7 +150,7 @@ function baseOpts(unit: string): import("chart.js").ChartOptions<any> {
     plugins: { legend: { labels: { color: "#9ca3af" } } },
     scales: {
       x: { ticks: { color: "#6b7280", maxTicksLimit: 10 }, grid: { color: "rgba(255,255,255,0.05)" } },
-      y: { ticks: { color: "#6b7280", callback: (v) => `${v}${unit}` }, grid: { color: "rgba(255,255,255,0.05)" } },
+      y: { ticks: { color: "#6b7280", callback: (v: string | number) => `${v}${unit}` }, grid: { color: "rgba(255,255,255,0.05)" } },
     },
   };
 }
