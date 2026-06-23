@@ -8,10 +8,7 @@ import {
   Siren,
   History,
   GitCompare,
-  LogOut,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 
 const items = [
   { to: "/", label: "Live Map", icon: Map, public: true },
