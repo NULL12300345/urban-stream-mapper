@@ -7,6 +7,7 @@ import { Line, Bar } from "react-chartjs-2";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/history")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "History — SmartTraffic" },

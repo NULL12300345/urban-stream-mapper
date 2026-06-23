@@ -8,6 +8,7 @@ let CachedMap: typeof TrafficMapType | null = null;
 
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Live Traffic Map — Hà Đông" },

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/intersections")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Intersections — SmartTraffic" },

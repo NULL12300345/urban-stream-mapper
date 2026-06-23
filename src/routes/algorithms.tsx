@@ -18,6 +18,7 @@ import { toast } from "sonner";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 export const Route = createFileRoute("/algorithms")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Algorithm Comparison — SmartTraffic" },

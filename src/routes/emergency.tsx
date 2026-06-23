@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Siren } from "lucide-react";
 
 export const Route = createFileRoute("/emergency")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Emergency Dispatch — SmartTraffic" },

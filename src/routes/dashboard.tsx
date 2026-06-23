@@ -7,6 +7,7 @@ import { simulator } from "@/lib/sim/simulator";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard — SmartTraffic" },
