@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useSimulator } from "@/hooks/use-simulator";
 import { StatCard } from "@/components/StatCard";
+import type { TrafficMap as TrafficMapType } from "@/components/TrafficMap";
 
-const TrafficMap = lazy(() =>
-  import("@/components/TrafficMap").then((m) => ({ default: m.TrafficMap })),
-);
+let CachedMap: typeof TrafficMapType | null = null;
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
