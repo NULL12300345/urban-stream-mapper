@@ -33,6 +33,10 @@ export function TrafficMap({ snapshot, className }: Props) {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const vehicleLayerRef = useRef<L.LayerGroup | null>(null);
+  const lastDrawRef = useRef<number>(0);
+  const rafRef = useRef<number | null>(null);
+  const pendingSnapRef = useRef<SimSnapshot>(snapshot);
+
 
   // Init map once
   useEffect(() => {
