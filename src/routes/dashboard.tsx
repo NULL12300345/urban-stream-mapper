@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useSimulator } from "@/hooks/use-simulator";
 import { StatCard } from "@/components/StatCard";
 import { TrafficLightIcon } from "@/components/TrafficLightIcon";
 import { simulator } from "@/lib/sim/simulator";
 import { toast } from "sonner";
+import type { TrafficMap as TrafficMapType } from "@/components/TrafficMap";
+
+let CachedMap: typeof TrafficMapType | null = null;
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
