@@ -62,6 +62,20 @@ function DashboardPage() {
 
       <section className="card-ops overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <h2 className="font-semibold text-sm">Live simulation map</h2>
+          <span className="text-xs text-muted-foreground font-mono">Phường Hà Đông</span>
+        </div>
+        <div className="h-[420px] w-full">
+          {MapComp ? (
+            <MapComp snapshot={snap} className="w-full h-full" />
+          ) : (
+            <div className="grid place-items-center h-full text-muted-foreground text-sm">Loading map…</div>
+          )}
+        </div>
+      </section>
+
+      <section className="card-ops overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <h2 className="font-semibold text-sm">Intersections</h2>
           {isAdmin && <span className="text-xs text-muted-foreground">Click an axis to force green</span>}
         </div>
