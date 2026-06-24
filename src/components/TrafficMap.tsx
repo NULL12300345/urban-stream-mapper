@@ -65,20 +65,46 @@ export function TrafficMap({ snapshot, className }: Props) {
     };
   }, []);
 
-  // Redraw intersections + heat each tick
+  // Redraw intersections + vehicles, throttled to ~2 Hz via rAF
   useEffect(() => {
-    const layer = layerRef.current;
-    if (!layer) return;
-    layer.clearLayers();
+    pendingSnapRef.current = snapshot;
+    if (rafRef.current != null) return;
+    const schedule = () => {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const now = performance.now();
+        if (now - lastDrawRef.current < 500) {
+          // Re-arm: try again after the throttle window
+          rafRef.current = requestAnimationFrame(schedule);
+          return;
+        }
+        lastDrawRef.current = now;
+        draw(pendingSnapRef.current);
+      });
+    };
+    schedule();
+    return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [snapshot]);
 
-    for (const i of snapshot.intersections) {
+  function draw(snap: SimSnapshot) {
+    const layer = layerRef.current;
+    const vlayer = vehicleLayerRef.current;
+    if (!layer || !vlayer) return;
+    layer.clearLayers();
+    vlayer.clearLayers();
+
+    for (const i of snap.intersections) {
       const totalQ =
         i.approaches.N.queueLength +
         i.approaches.S.queueLength +
         i.approaches.E.queueLength +
         i.approaches.W.queueLength;
 
-      // Heat halo
       L.circle([i.lat, i.lng], {
         radius: 80 + totalQ * 4,
         color: congestionColor(totalQ),
@@ -87,7 +113,6 @@ export function TrafficMap({ snapshot, className }: Props) {
         weight: 1,
       }).addTo(layer);
 
-      // Intersection marker
       const color = lightColor(i);
       const marker = L.circleMarker([i.lat, i.lng], {
         radius: 9,
@@ -97,12 +122,11 @@ export function TrafficMap({ snapshot, className }: Props) {
         weight: 2,
       }).addTo(layer);
 
-      // Queued cars: draw small dots along each approach axis
       for (const dir of ["N", "S", "E", "W"] as const) {
         const q = i.approaches[dir].queueLength;
-        const shown = Math.min(q, 12);
-        const isGreen = i.approaches[dir].light === "green";
-        const dotColor = isGreen ? "#22e07a" : i.approaches[dir].light === "amber" ? "#f5b400" : "#94a3b8";
+        const shown = Math.min(q, 8);
+        const lightState = i.approaches[dir].light;
+        const dotColor = lightState === "green" ? "#22e07a" : lightState === "amber" ? "#f5b400" : "#94a3b8";
         for (let k = 0; k < shown; k++) {
           const pos = offsetLatLng(i.lat, i.lng, dir, 18 + k * 12);
           L.circleMarker(pos, {
@@ -128,15 +152,9 @@ export function TrafficMap({ snapshot, className }: Props) {
         </div>`;
       marker.bindPopup(html);
     }
-  }, [snapshot]);
 
-  // Vehicles (ambulances)
-  useEffect(() => {
-    const layer = vehicleLayerRef.current;
-    if (!layer) return;
-    layer.clearLayers();
-    for (const v of snapshot.vehicles) {
-      const inter = snapshot.intersections.find((i) => i.id === v.intersectionId);
+    for (const v of snap.vehicles) {
+      const inter = snap.intersections.find((i) => i.id === v.intersectionId);
       if (!inter) continue;
       const pos = offsetLatLng(inter.lat, inter.lng, v.direction, v.offset);
       const icon = L.divIcon({
@@ -145,12 +163,13 @@ export function TrafficMap({ snapshot, className }: Props) {
         iconSize: [24, 16],
         iconAnchor: [12, 8],
       });
-      L.marker(pos, { icon }).addTo(layer);
+      L.marker(pos, { icon }).addTo(vlayer);
     }
-  }, [snapshot]);
+  }
 
   return <div ref={containerRef} className={className} />;
 }
+
 
 // Convert offset (meters along approach axis) to a lat/lng near the intersection.
 function offsetLatLng(
