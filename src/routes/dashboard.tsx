@@ -23,6 +23,14 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const snap = useSimulator();
   const isAdmin = true;
+  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(CachedMap);
+  useEffect(() => {
+    if (CachedMap) return;
+    import("@/components/TrafficMap").then((m) => {
+      CachedMap = m.TrafficMap;
+      setMapComp(() => m.TrafficMap);
+    });
+  }, []);
 
   const { stats } = snap;
 
