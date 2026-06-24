@@ -109,6 +109,15 @@ export class Simulator {
     setLights(i);
   }
 
+  /** Inject N test vehicles into a given approach queue. */
+  injectVehicles(intersectionId: string, direction: Direction, count: number) {
+    const i = this.intersections.find((x) => x.id === intersectionId);
+    if (!i) return;
+    const next = Math.min(MAX_QUEUE, i.approaches[direction].queueLength + count);
+    i.approaches[direction].queueLength = next;
+    this.emit();
+  }
+
   /** Trigger emergency mode: cascade green along a list of intersections on one axis. */
   triggerEmergency(intersectionIds: string[], axis: "NS" | "EW") {
     this.emergencyRoute = { intersectionIds, axis };

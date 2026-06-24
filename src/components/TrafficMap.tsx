@@ -93,6 +93,24 @@ export function TrafficMap({ snapshot, className }: Props) {
         weight: 2,
       }).addTo(layer);
 
+      // Queued cars: draw small dots along each approach axis
+      for (const dir of ["N", "S", "E", "W"] as const) {
+        const q = i.approaches[dir].queueLength;
+        const shown = Math.min(q, 12);
+        const isGreen = i.approaches[dir].light === "green";
+        const dotColor = isGreen ? "#22e07a" : i.approaches[dir].light === "amber" ? "#f5b400" : "#94a3b8";
+        for (let k = 0; k < shown; k++) {
+          const pos = offsetLatLng(i.lat, i.lng, dir, 18 + k * 12);
+          L.circleMarker(pos, {
+            radius: 2.5,
+            color: dotColor,
+            fillColor: dotColor,
+            fillOpacity: 0.9,
+            weight: 0,
+          }).addTo(layer);
+        }
+      }
+
       const html = `
         <div style="font-family: 'JetBrains Mono', monospace; min-width: 200px;">
           <div style="font-weight:600;color:#22d3ee;margin-bottom:4px;font-family:Inter,sans-serif">${escapeHtml(i.name)}</div>

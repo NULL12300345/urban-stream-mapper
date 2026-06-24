@@ -74,6 +74,40 @@ function DashboardPage() {
         </div>
       </section>
 
+      <section className="card-ops p-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="font-semibold text-sm">Inject test traffic</h2>
+            <p className="text-xs text-muted-foreground">Add cars to any approach to test the algorithm response.</p>
+          </div>
+          <button
+            onClick={() => {
+              for (const i of snap.intersections) {
+                for (const d of ["N", "S", "E", "W"] as const) simulator.injectVehicles(i.id, d, 5);
+              }
+              toast.success("Injected 5 cars on every approach");
+            }}
+            className="text-xs px-3 py-1.5 rounded border border-border hover:border-primary hover:text-primary"
+          >Flood all intersections (+5 each)</button>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {snap.intersections.map((i) => (
+            <div key={i.id} className="flex items-center justify-between gap-2 border border-border/60 rounded px-3 py-2">
+              <div className="text-sm truncate">{i.name}</div>
+              <div className="flex gap-1">
+                {(["N", "S", "E", "W"] as const).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => { simulator.injectVehicles(i.id, d, 3); toast.success(`+3 cars on ${d}`); }}
+                    className="text-xs px-2 py-1 rounded border border-border hover:border-signal-amber hover:text-signal-amber font-mono"
+                  >+{d}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="card-ops overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <h2 className="font-semibold text-sm">Intersections</h2>
