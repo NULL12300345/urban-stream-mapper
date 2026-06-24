@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
 
 function LivePage() {
   const snap = useSimulator();
-  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(CachedMap);
+  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(() => CachedMap);
   useEffect(() => {
     if (CachedMap) return;
     import("@/components/TrafficMap").then((m) => {
