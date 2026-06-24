@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useSimulator } from "@/hooks/use-simulator";
 import { StatCard } from "@/components/StatCard";
 import { TrafficLightIcon } from "@/components/TrafficLightIcon";
 import { simulator } from "@/lib/sim/simulator";
 import { toast } from "sonner";
+import type { TrafficMap as TrafficMapType } from "@/components/TrafficMap";
+
+let CachedMap: typeof TrafficMapType | null = null;
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -19,6 +23,14 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const snap = useSimulator();
   const isAdmin = true;
+  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(CachedMap);
+  useEffect(() => {
+    if (CachedMap) return;
+    import("@/components/TrafficMap").then((m) => {
+      CachedMap = m.TrafficMap;
+      setMapComp(() => m.TrafficMap);
+    });
+  }, []);
 
   const { stats } = snap;
 
@@ -47,6 +59,20 @@ function DashboardPage() {
           <div className="text-sm mt-1">Ambulance corridor in progress. Lights are forced green along the route.</div>
         </div>
       )}
+
+      <section className="card-ops overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <h2 className="font-semibold text-sm">Live simulation map</h2>
+          <span className="text-xs text-muted-foreground font-mono">Phường Hà Đông</span>
+        </div>
+        <div className="h-[420px] w-full">
+          {MapComp ? (
+            <MapComp snapshot={snap} className="w-full h-full" />
+          ) : (
+            <div className="grid place-items-center h-full text-muted-foreground text-sm">Loading map…</div>
+          )}
+        </div>
+      </section>
 
       <section className="card-ops overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
