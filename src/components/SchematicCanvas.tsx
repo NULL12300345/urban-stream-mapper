@@ -169,6 +169,9 @@ export function SchematicCanvas({ snapshot, className }: Props) {
 /** Hook to subscribe to the schematic simulator. */
 export function useSchematic(): SchemSnapshot {
   const [snap, setSnap] = useState<SchemSnapshot>(() => schematicSim.snapshot());
-  useEffect(() => schematicSim.subscribe(setSnap), []);
+  useEffect(() => {
+    const unsub = schematicSim.subscribe(setSnap);
+    return () => { unsub(); };
+  }, []);
   return snap;
 }
