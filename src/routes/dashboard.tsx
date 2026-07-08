@@ -1,104 +1,146 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useSimulator } from "@/hooks/use-simulator";
+import { SchematicCanvas, useSchematic } from "@/components/SchematicCanvas";
+import { schematicSim, DIRS, type Algorithm, type Direction } from "@/lib/sim/schematic";
 import { StatCard } from "@/components/StatCard";
-import { TrafficLightIcon } from "@/components/TrafficLightIcon";
-import { simulator } from "@/lib/sim/simulator";
 import { toast } from "sonner";
-import type { TrafficMap as TrafficMapType } from "@/components/TrafficMap";
-
-let CachedMap: typeof TrafficMapType | null = null;
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard — SmartTraffic" },
-      { name: "description", content: "Realtime operations dashboard." },
+      { name: "description", content: "Realtime traffic simulation dashboard." },
     ],
   }),
   component: DashboardPage,
 });
 
 function DashboardPage() {
-  const snap = useSimulator();
-  const isAdmin = true;
-  const [MapComp, setMapComp] = useState<typeof TrafficMapType | null>(() => CachedMap);
-  useEffect(() => {
-    if (CachedMap) return;
-    import("@/components/TrafficMap").then((m) => {
-      CachedMap = m.TrafficMap;
-      setMapComp(() => m.TrafficMap);
-    });
-  }, []);
-
-  const { stats } = snap;
+  const snap = useSchematic();
+  const p = snap.params;
 
   return (
     <div className="p-6 space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Operations Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Traffic Simulation</h1>
         <p className="text-xs text-muted-foreground font-mono mt-1">
-          tick {snap.tick} · open access
+          tick {snap.tick} · {p.running ? "running" : "paused"} · algo <span className="text-primary">{p.algorithm}</span>
         </p>
       </header>
 
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Total vehicles" value={stats.totalVehicles} hint="queued + in transit" />
-        <StatCard label="Passed" value={stats.vehiclesPassed} tone="good" />
-        <StatCard label="Avg wait" value={`${stats.avgWaitSeconds.toFixed(1)}s`}
-          tone={stats.avgWaitSeconds < 15 ? "good" : stats.avgWaitSeconds < 30 ? "warn" : "bad"} />
-        <StatCard label="Congestion" value={`${Math.round(stats.congestionScore * 100)}%`}
-          tone={stats.congestionScore < 0.3 ? "good" : stats.congestionScore < 0.6 ? "warn" : "bad"} />
+        <StatCard label="Cars on road" value={snap.stats.total} hint="live vehicles" />
+        <StatCard label="Passed" value={snap.stats.passed} tone="good" />
+        <StatCard label="Avg wait" value={`${snap.stats.avgWait.toFixed(1)}s`}
+          tone={snap.stats.avgWait < 6 ? "good" : snap.stats.avgWait < 15 ? "warn" : "bad"} />
+        <StatCard label="Congestion" value={`${Math.round(snap.stats.congestion * 100)}%`}
+          tone={snap.stats.congestion < 0.3 ? "good" : snap.stats.congestion < 0.6 ? "warn" : "bad"} />
       </div>
 
-      {stats.emergencyActive && (
-        <div className="card-ops glow-red border-signal-red/40 p-4">
-          <div className="text-xs uppercase font-mono text-signal-red">Emergency active</div>
-          <div className="text-sm mt-1">Ambulance corridor in progress. Lights are forced green along the route.</div>
+      {/* Controls */}
+      <section className="card-ops p-4 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="font-semibold text-sm">Input & control</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => schematicSim.setParam("running", !p.running)}
+              className="text-xs px-3 py-1.5 rounded border border-border hover:border-primary hover:text-primary"
+            >{p.running ? "Pause" : "Resume"}</button>
+            <button
+              onClick={() => { schematicSim.reset(); toast.success("Simulation reset"); }}
+              className="text-xs px-3 py-1.5 rounded border border-border hover:border-signal-amber hover:text-signal-amber"
+            >Reset</button>
+            <button
+              onClick={() => { schematicSim.floodAll(3); toast.success("+3 cars on every approach"); }}
+              className="text-xs px-3 py-1.5 rounded border border-border hover:border-signal-red hover:text-signal-red"
+            >Flood +3</button>
+          </div>
         </div>
-      )}
 
-      <section className="card-ops overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <h2 className="font-semibold text-sm">Live simulation map</h2>
-          <span className="text-xs text-muted-foreground font-mono">Phường Hà Đông</span>
-        </div>
-        <div className="h-[420px] w-full">
-          {MapComp ? (
-            <MapComp snapshot={snap} className="w-full h-full" />
-          ) : (
-            <div className="grid place-items-center h-full text-muted-foreground text-sm">Loading map…</div>
-          )}
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Arrival rate */}
+          <label className="space-y-1.5 block">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Arrival rate</span>
+              <span className="font-mono text-primary">{p.arrivalRate.toFixed(2)} veh/s per lane</span>
+            </div>
+            <input
+              type="range" min={0} max={2} step={0.05}
+              value={p.arrivalRate}
+              onChange={(e) => schematicSim.setParam("arrivalRate", parseFloat(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </label>
+
+          {/* Speed */}
+          <label className="space-y-1.5 block">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Vehicle speed</span>
+              <span className="font-mono text-primary">{p.speed.toFixed(0)} px/s</span>
+            </div>
+            <input
+              type="range" min={10} max={220} step={5}
+              value={p.speed}
+              onChange={(e) => schematicSim.setParam("speed", parseFloat(e.target.value))}
+              className="w-full accent-primary"
+            />
+          </label>
+
+          {/* Algorithm */}
+          <div className="space-y-1.5">
+            <div className="text-xs text-muted-foreground">Signal algorithm</div>
+            <div className="flex gap-2">
+              {(["fixed", "greedy"] as Algorithm[]).map((a) => (
+                <button
+                  key={a}
+                  onClick={() => schematicSim.setParam("algorithm", a)}
+                  className={`text-xs px-3 py-1.5 rounded border font-mono uppercase flex-1 ${
+                    p.algorithm === a
+                      ? "border-primary text-primary bg-primary/10"
+                      : "border-border hover:border-primary/60"
+                  }`}
+                >{a}</button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-tight pt-1">
+              <b>Fixed:</b> mỗi trục xanh 12s cố định. <b>Greedy:</b> thời gian xanh tỉ lệ với số xe đang chờ.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="card-ops p-4 space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h2 className="font-semibold text-sm">Inject test traffic</h2>
-            <p className="text-xs text-muted-foreground">Add cars to any approach to test the algorithm response.</p>
+      {/* Canvas */}
+      <section className="card-ops overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <h2 className="font-semibold text-sm">Live network</h2>
+          <div className="flex gap-3 text-[10px] text-muted-foreground font-mono">
+            <span><span className="inline-block w-2 h-2 rounded-full bg-signal-red mr-1" />vehicle</span>
+            <span><span className="inline-block w-2 h-2 rounded-full bg-signal-green mr-1" />green</span>
+            <span><span className="inline-block w-2 h-2 rounded-full bg-signal-amber mr-1" />amber</span>
           </div>
-          <button
-            onClick={() => {
-              for (const i of snap.intersections) {
-                for (const d of ["N", "S", "E", "W"] as const) simulator.injectVehicles(i.id, d, 5);
-              }
-              toast.success("Injected 5 cars on every approach");
-            }}
-            className="text-xs px-3 py-1.5 rounded border border-border hover:border-primary hover:text-primary"
-          >Flood all intersections (+5 each)</button>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="w-full">
+          <SchematicCanvas snapshot={snap} className="w-full h-auto block" />
+        </div>
+      </section>
+
+      {/* Per-intersection injectors */}
+      <section className="card-ops p-4 space-y-3">
+        <h2 className="font-semibold text-sm">Inject vehicles per intersection</h2>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {snap.intersections.map((i) => (
             <div key={i.id} className="flex items-center justify-between gap-2 border border-border/60 rounded px-3 py-2">
-              <div className="text-sm truncate">{i.name}</div>
+              <div className="min-w-0">
+                <div className="text-sm truncate">{i.name}</div>
+                <div className="text-[10px] text-muted-foreground font-mono">
+                  passed {i.passed} · phase {i.phase}
+                </div>
+              </div>
               <div className="flex gap-1">
-                {(["N", "S", "E", "W"] as const).map((d) => (
+                {DIRS.map((d: Direction) => (
                   <button
                     key={d}
-                    onClick={() => { simulator.injectVehicles(i.id, d, 3); toast.success(`+3 cars on ${d}`); }}
+                    onClick={() => { schematicSim.inject(i.id, d, 3); }}
                     className="text-xs px-2 py-1 rounded border border-border hover:border-signal-amber hover:text-signal-amber font-mono"
                   >+{d}</button>
                 ))}
@@ -107,55 +149,6 @@ function DashboardPage() {
           ))}
         </div>
       </section>
-
-      <section className="card-ops overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <h2 className="font-semibold text-sm">Intersections</h2>
-          {isAdmin && <span className="text-xs text-muted-foreground">Click an axis to force green</span>}
-        </div>
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase font-mono text-muted-foreground bg-surface-2/50">
-            <tr>
-              <th className="text-left px-4 py-2">Name</th>
-              <th className="text-left px-4 py-2">Algo</th>
-              <th className="text-left px-4 py-2">Lights</th>
-              <th className="text-right px-4 py-2">N</th>
-              <th className="text-right px-4 py-2">S</th>
-              <th className="text-right px-4 py-2">E</th>
-              <th className="text-right px-4 py-2">W</th>
-              <th className="text-right px-4 py-2">Passed</th>
-              {isAdmin && <th className="text-right px-4 py-2">Override</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {snap.intersections.map((i) => (
-              <tr key={i.id} className="border-t border-border/60">
-                <td className="px-4 py-2.5">{i.name}</td>
-                <td className="px-4 py-2.5 font-mono text-xs uppercase">{i.algorithm}</td>
-                <td className="px-4 py-2.5"><TrafficLightIcon intersection={i} /></td>
-                <td className="px-4 py-2.5 text-right font-mono">{i.approaches.N.queueLength}</td>
-                <td className="px-4 py-2.5 text-right font-mono">{i.approaches.S.queueLength}</td>
-                <td className="px-4 py-2.5 text-right font-mono">{i.approaches.E.queueLength}</td>
-                <td className="px-4 py-2.5 text-right font-mono">{i.approaches.W.queueLength}</td>
-                <td className="px-4 py-2.5 text-right font-mono text-signal-green">{i.passed}</td>
-                {isAdmin && (
-                  <td className="px-4 py-2.5 text-right space-x-1">
-                    <button
-                      onClick={() => { simulator.manualOverride(i.id, "NS"); toast.success(`${i.name}: NS green`); }}
-                      className="text-xs px-2 py-1 rounded border border-border hover:border-signal-green hover:text-signal-green"
-                    >NS</button>
-                    <button
-                      onClick={() => { simulator.manualOverride(i.id, "EW"); toast.success(`${i.name}: EW green`); }}
-                      className="text-xs px-2 py-1 rounded border border-border hover:border-signal-green hover:text-signal-green"
-                    >EW</button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
     </div>
   );
 }
-
